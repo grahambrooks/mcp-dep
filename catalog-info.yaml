@@ -4,10 +4,6 @@ metadata:
   name: mcp-ping
   title: MCP Ping Server
   description: A minimal MCP (Model Context Protocol) server written in Rust that demonstrates how to package and distribute MCP servers using MCP Bundles (MCPB)
-  labels:
-    owner: platform-team
-    tier: integration
-    type: mcp-server
   tags:
     - mcp
     - rust
