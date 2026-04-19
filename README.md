@@ -1,7 +1,7 @@
 # mcp-ping
 
 A simple MCP (Model Context Protocol) server written in Rust with a single `ping` tool that responds with "pong". The
-purpose of this repository is to provide an example of how to pachage and distribute MCP Servers using MCP Bundles (
+purpose of this repository is to provide an example of how to package and distribute MCP Servers using MCP Bundles (
 MCPB).
 
 MCPB Project and specification https://github.com/modelcontextprotocol/mcpb

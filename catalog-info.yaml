@@ -1,0 +1,74 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mcp-ping
+  title: MCP Ping Server
+  description: A minimal MCP (Model Context Protocol) server written in Rust that demonstrates how to package and distribute MCP servers using MCP Bundles (MCPB)
+  labels:
+    owner: platform-team
+    tier: integration
+    type: mcp-server
+  tags:
+    - mcp
+    - rust
+    - protocol
+    - ai
+  annotations:
+    github.com/project-slug: grahambrooks/mcp-dep
+    backstage.io/source-location: url:https://github.com/grahambrooks/mcp-dep/blob/main/catalog-info.yaml
+spec:
+  type: service
+  lifecycle: production
+  owner: grahambrooks
+  system: mcp-ecosystem
+
+  # Component details
+  description: |
+    A simple MCP (Model Context Protocol) server providing a single `ping` tool that responds with "pong".
+    
+    This project serves as an example of how to package and distribute MCP servers using MCP Bundles (MCPB).
+    It demonstrates best practices for creating minimal MCP servers in Rust.
+
+  # API information
+  providesApis:
+    - mcp-ping-api
+
+  # Links to resources
+  links:
+    - url: https://github.com/grahambrooks/mcp-dep
+      title: GitHub Repository
+      icon: github
+    - url: https://github.com/grahambrooks/mcp-dep/releases
+      title: Releases
+      icon: github
+    - url: https://github.com/modelcontextprotocol/mcpb
+      title: MCPB Specification
+      icon: web
+
+  # Deployment information
+  dependsOn:
+    - resource:default/rustup-toolchain
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: mcp-ping-api
+  title: MCP Ping API
+  description: JSON-RPC API for the MCP Ping Server
+  links:
+    - url: https://github.com/modelcontextprotocol/mcpb
+      title: MCP Specification
+spec:
+  type: openapi
+  lifecycle: production
+  owner: grahambrooks
+  definition: |
+    Protocol: JSON-RPC 2.0
+    Transport: stdio
+    Version: 2024-11-05
+    
+    Tools:
+    - name: ping
+      description: A simple ping tool that responds with "pong"
+
