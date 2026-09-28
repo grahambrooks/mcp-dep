@@ -8,6 +8,6 @@ repository = "https://github.com/grahambrooks/mcp-dep"
 authors = ["Graham Brooks graham@grahambrooks.com"]
 
 [dependencies]
-rmcp = { version = "0.3", features = ["server", "transport-io"] }
+rmcp = { version = "0.17", features = ["server", "transport-io"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
