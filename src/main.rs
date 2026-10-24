@@ -1,16 +1,21 @@
 use anyhow::Result;
 use rmcp::{
     handler::server::router::tool::ToolRouter,
-    model::{ErrorData as McpError, *},
+    model::{ContentBlock, ErrorData as McpError, *},
     tool, tool_handler, tool_router,
     transport::stdio,
     ServerHandler, ServiceExt,
 };
-use std::future::Future;
 
 #[derive(Debug, Clone)]
 pub struct PingServer {
     tool_router: ToolRouter<PingServer>,
+}
+
+impl Default for PingServer {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[tool_router]
@@ -24,21 +29,17 @@ impl PingServer {
     /// A simple ping tool that responds with pong
     #[tool(description = "A simple ping tool that responds with pong")]
     async fn ping(&self) -> Result<CallToolResult, McpError> {
-        Ok(CallToolResult::success(vec![Content::text("pong")]))
+        Ok(CallToolResult::success(vec![ContentBlock::text("pong")]))
     }
 }
 
-#[tool_handler]
+#[tool_handler(router = self.tool_router)]
 impl ServerHandler for PingServer {
-    fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            protocol_version: ProtocolVersion::V_2024_11_05,
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            server_info: Implementation::from_build_env(),
-            instructions: Some(
-                "A simple MCP server with a ping tool that responds with pong".to_string(),
-            ),
-        }
+    fn get_info(&self) -> ServerConfig {
+        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
+            .with_protocol_version(ProtocolVersion::V_2024_11_05)
+            .with_server_info(Implementation::from_build_env())
+            .with_instructions("A simple MCP server with a ping tool that responds with pong")
     }
 }
 
