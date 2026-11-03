@@ -11,6 +11,8 @@ mcp-ping is a minimal MCP (Model Context Protocol) server written in Rust that d
 ## Build Commands
 
 ```bash
+make check               # The gate: fmt-check + clippy + test, exactly as CI runs them
+make hooks               # Install the prek git hooks (make check runs before push)
 cargo build              # Development build
 cargo build --release    # Release build
 cargo test               # Run tests
@@ -18,12 +20,11 @@ cargo clippy             # Lint
 cargo fmt                # Format code
 ```
 
-## Pre-commit Hooks
+## Git Hooks
 
-```bash
-cargo clippy --fix
-cargo fmt
-```
+`prek.toml` defines them; install with `make hooks`. Commit runs whitespace/YAML/TOML
+checks, actionlint, gitleaks and `cargo fmt --check`; push runs `make check`. To fix
+what they report: `make fmt`, `cargo clippy --fix`.
 
 ## Architecture
 

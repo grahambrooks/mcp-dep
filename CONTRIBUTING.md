@@ -13,11 +13,10 @@ Contributions are welcome! Here's how you can help.
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-feature`)
 3. Make your changes
-4. Run tests (`cargo test`)
-5. Run clippy (`cargo clippy`)
-6. Format code (`cargo fmt`)
-7. Commit with a clear message
-8. Push and open a pull request
+4. Format code (`make fmt`)
+5. Run the same checks CI runs (`make check`: fmt, clippy, tests)
+6. Commit with a clear message
+7. Push and open a pull request
 
 ## Code Style
 
