@@ -1,0 +1,121 @@
+# Release extras for mcp-dep: what the release publishes beyond the platform
+# archives and Homebrew formula that the standard release workflow (release.yml,
+# release-kit v2) owns.
+#
+#   * mcpb     — Claude Desktop MCP bundles (.mcpb), one per platform, built from
+#                the `mcp-ping` binary in the published release archives.
+#   * registry — registry.json, listing those bundles for package discovery.
+#
+# Both are attached to the same GitHub Release. Runs after `release` finishes
+# successfully for a tag push. A release re-run via workflow_dispatch reports a
+# branch rather than the tag, so re-run this by hand in that case: Actions →
+# release-extras → Run workflow, with the tag.
+name: release-extras
+
+on:
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing released tag (e.g. v2026.11.3)
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-extras-${{ inputs.tag || github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ inputs.tag || github.event.workflow_run.head_branch }}
+
+jobs:
+  mcpb:
+    name: Package MCPB bundles
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       startsWith(github.event.workflow_run.head_branch, 'v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Download release archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p archives
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D archives \
+            -p "mcp-ping-${TAG}-*.tar.gz" -p "mcp-ping-${TAG}-*.zip"
+          ls -la archives
+
+      - name: Create platform-specific bundles
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+
+          # bundle <mcpb platform> <mcpb arch> <rust target> <archive ext> <binary name>
+          # An .mcpb is a zip with manifest.json and the entry point at its root.
+          bundle() {
+            local platform="$1" arch="$2" target="$3" ext="$4" bin="$5"
+            local name="mcp-ping-${VERSION}-${platform}-${arch}"
+            local extract="extract-${platform}-${arch}"
+            mkdir -p "${name}" "${extract}"
+            case "${ext}" in
+              tar.gz) tar -xzf "archives/mcp-ping-${TAG}-${target}.tar.gz" -C "${extract}" ;;
+              zip) unzip -q "archives/mcp-ping-${TAG}-${target}.zip" -d "${extract}" ;;
+            esac
+            jq --arg v "$VERSION" --arg bin "$bin" \
+              '.version = $v | .server.entry_point = $bin | .server.mcp_config.command = ("${__dirname}/" + $bin)' \
+              manifest.json > "${name}/manifest.json"
+            cp "${extract}/${bin}" "${name}/"
+            chmod +x "${name}/${bin}"
+            (cd "${name}" && zip -q -r "../${name}.mcpb" .)
+          }
+
+          bundle darwin x86_64  x86_64-apple-darwin       tar.gz mcp-ping
+          bundle darwin aarch64 aarch64-apple-darwin      tar.gz mcp-ping
+          bundle linux  x86_64  x86_64-unknown-linux-gnu  tar.gz mcp-ping
+          bundle linux  aarch64 aarch64-unknown-linux-gnu tar.gz mcp-ping
+          bundle win32  x86_64  x86_64-pc-windows-msvc    zip    mcp-ping.exe
+
+          ls -la ./*.mcpb
+
+      - name: Generate registry.json
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+          BASE="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          jq -n --arg v "$VERSION" --arg repo "https://github.com/${GITHUB_REPOSITORY}" --arg base "$BASE" '{
+            schema_version: "1.0",
+            name: "mcp-ping",
+            display_name: "MCP Ping Server",
+            description: "A simple MCP server with a ping tool that responds with pong",
+            version: $v,
+            author: { name: "Graham Brooks", url: "https://github.com/grahambrooks" },
+            repository: $repo,
+            license: "MIT",
+            packages: [
+              ["darwin", "x86_64"], ["darwin", "aarch64"],
+              ["linux", "x86_64"], ["linux", "aarch64"],
+              ["win32", "x86_64"]
+            ] | map({
+              platform: .[0],
+              arch: .[1],
+              url: "\($base)/mcp-ping-\($v)-\(.[0])-\(.[1]).mcpb"
+            })
+          }' > registry.json
+          cat registry.json
+
+      - name: Attach bundles and registry to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" -R "$GITHUB_REPOSITORY" ./*.mcpb registry.json --clobber

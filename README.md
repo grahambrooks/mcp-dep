@@ -196,26 +196,26 @@ cargo test
 
 ## Release Process
 
-Releases are automated via GitHub Actions. To create a new release:
+Releases use [release-kit](https://github.com/grahambrooks/release-kit) with
+CalVer tags (`vYYYY.M.D`: today's UTC date, the last number bumped if that tag
+exists). The tag is the version; nothing is bumped by hand:
 
-1. Update the version in `Cargo.toml`
-2. Commit and push changes
-3. Create and push a version tag:
-   ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
+```bash
+make release-dry   # show the tag that would be pushed
+make release       # tag origin/main with the next CalVer and push only the tag
+```
 
-The workflow builds binaries for:
-
-- macOS (x86_64, aarch64)
-- Linux (x86_64, aarch64)
-- Windows (x86_64)
-
-Each release includes:
+The tag runs `.github/workflows/release.yml` (identical in every release-kit
+repo; configured by `.release.env`), which builds `mcp-ping` for macOS
+(x86_64, aarch64), Linux (x86_64, aarch64) and Windows (x86_64), publishes the
+archives and `SHA256SUMS` on a GitHub Release, and merges a PR that updates the
+Homebrew formula (`Formula/mcp-ping.rb`) and the version in `Cargo.toml`.
+`.github/workflows/release-extras.yml` then adds to the same release:
 
 - Platform-specific `.mcpb` packages
 - `registry.json` for package discovery
+
+Nothing is published to crates.io.
 
 ## License
 

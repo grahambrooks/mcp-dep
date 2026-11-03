@@ -46,15 +46,16 @@ The server uses the `rmcp` crate with procedural macros:
 
 - `manifest.json` - Bundle metadata following MCPB spec v0.3
 - Binary executable - The compiled Rust server
-- Release workflow creates `.mcpb` packages for all platforms
+- `release-extras.yml` creates `.mcpb` packages for all platforms
 
 ## Release Process
 
-Tag-based releases via GitHub Actions:
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+release-kit, CalVer tags (`vYYYY.M.D`). `make release-dry` previews, `make release`
+tags origin/main and pushes only the tag. `release.yml`, `scripts/release.py` and
+`release.mk` are byte-identical across repos (re-sync with release-kit's stamp.py;
+per-repo settings live in `.release.env`). The `.mcpb` bundles and `registry.json`
+are built by `release-extras.yml` from the published archives. Don't bump the
+version by hand; the release PR does it. No crates.io publishing.
 
 Builds for: darwin (x86_64, aarch64), linux (x86_64, aarch64), win32 (x86_64)
 

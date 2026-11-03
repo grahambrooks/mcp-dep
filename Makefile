@@ -1,5 +1,5 @@
 # Standard targets. `make check` is the gate: exactly what the ci.yml check job runs;
-# prek runs it before every push. Releases are tag-based (see CLAUDE.md), not make.
+# prek runs it before every push. Releases: `make release` (release.mk, from release-kit).
 
 .DEFAULT_GOAL := help
 
@@ -26,3 +26,5 @@ test: ## Run the tests
 
 hooks: ## Install the git hooks (pre-commit and pre-push) with prek
 	prek install
+
+include release.mk
