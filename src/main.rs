@@ -1,10 +1,10 @@
 use anyhow::Result;
 use rmcp::{
+    ServerHandler, ServiceExt,
     handler::server::router::tool::ToolRouter,
     model::{ContentBlock, ErrorData as McpError, *},
     tool, tool_handler, tool_router,
     transport::stdio,
-    ServerHandler, ServiceExt,
 };
 
 #[derive(Debug, Clone)]

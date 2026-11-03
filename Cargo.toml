@@ -1,7 +1,8 @@
 [package]
 name = "mcp-ping"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+rust-version = "1.99.1"
 description = "A simple MCP server with a ping tool that responds with pong"
 license = "MIT"
 repository = "https://github.com/grahambrooks/mcp-dep"
