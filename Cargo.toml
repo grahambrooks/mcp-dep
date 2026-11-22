@@ -2,13 +2,13 @@
 name = "mcp-ping"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.99.1"
+rust-version = "1.100.0"
 description = "A simple MCP server with a ping tool that responds with pong"
 license = "MIT"
 repository = "https://github.com/grahambrooks/mcp-dep"
 authors = ["Graham Brooks graham@grahambrooks.com"]
 
 [dependencies]
-rmcp = { version = "3.7", features = ["server", "transport-io"] }
+rmcp = { version = "3.11", features = ["server", "transport-io"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
